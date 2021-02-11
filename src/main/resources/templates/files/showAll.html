@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script th:src="@{/js/jquery.min.js}" ></script>
+    <script>
+        $(function (){
+            setInterval(function (){
+                $.get("[[@{/file/findAllByJson}]]",function (res){
+                    $.each(res,function (index,user){
+                        $("#"+user.id).text(user.downCounts);
+                    })
+                })
+            },3000)
+        })
+    </script>
+</head>
+<body>
+<h1>欢迎: <span th:if="${session.user!=null}" th:text="${session.user.username}"></span></h1>
+<h3>文件列表：</h3>
+<table border="1px">
+    <tr>
+        <th>ID</th>
+        <th>文件原始名称</th>
+        <th>文件新名称</th>
+        <th>文件后缀</th>
+        <th>存储路径</th>
+        <th>文件大小</th>
+        <th>类型</th>
+        <th>是否是图片</th>
+        <th>下载次数</th>
+        <th>上传时间</th>
+        <th>操作</th>
+    </tr>
+    <tr th:each="user,userStatus:${list}">
+        <td> <span th:text="${user.id}"></span> </td>
+        <td> <span th:text="${user.oldFileName}"></span> </td>
+        <td> <span th:text="${user.newFileName}"></span> </td>
+        <td> <span th:text="${user.ext}"></span> </td>
+        <td> <span th:text="${user.path}"></span> </td>
+        <td> <span th:text="${user.size}"></span> </td>
+        <td> <span th:text="${user.type}"></span> </td>
+        <td> <span th:if="${user.isImg}== '否'" th:text="${user.isImg}"></span>
+            <img style="height: 20px; width: 20px;" th:if="${user.isImg}== '是'" th:src="${#servletContext.contextPath}+${user.path}+'/'+${user.newFileName}"/>
+        </td>
+        <td th:id="${user.id}"> <span th:text="${user.downCounts}"></span> </td>
+        <td> <span th:text="${#dates.format(user.uploadTime,'yyyy-MM-dd HH:mm:ss')}"></span> </td>
+        <td> <a th:href="@{/file/download(id=${user.id})}">下载</a>
+             <a th:href="@{/file/download(id=${user.id},openStyle='inline')}">在线打开</a>
+             <a th:href="@{/file/delete/(id=${user.id})}">删除</a>
+        </td>
+    </tr>
+</table>
+<br/>
+<h3>上传文件</h3>
+<form th:action="@{/file/upload}" method="post" enctype="multipart/form-data">
+    <input type="file" name="youFile">
+    <input type="submit" value="上传文件">
+</form>
+</body>
+</html>
